@@ -1,0 +1,62 @@
+set up VM:
+
+ open ubuntu VM
+ mount ubuntu .iso image
+ install python
+ install easy installer
+ install python.h thing (google search)
+ install startcluster
+ copy config file from starcluster hidden directory
+  edit config file
+   save to starcluster directory
+ use following to mount the shared folder "home/jared/host"
+   sudo mount -t vboxsf -o uid=$UID,gid=1000 share ./host
+ copy setup and installation files directory from local to VM
+ put 'filesToNodes' on VM
+
+set up cluster:
+
+ $ starcluster start [new cluster name] 
+ source install.R.sh
+ 
+* if setting up AMI first and then creating cluster from the instance:
+
+ edit config file with base AMI:
+    starcluster -r us-west-2 listpublic
+ starcluster start -o imageHost
+ source install.R.sh >& /home/jared/install.R.log (modified to use /root and ssh as root, from /home/jared with ssh as user jared)
+ rm all log and install files from master node
+ starcluster listinstances to get instance id
+ starcluster ebsimage [instance id] [new instance name]
+ use returned ami-xxxxxxx to update NODE_IMAGE_ID in /.starcluster/config file
+ starcluster terminate imageHost
+ choose/update number/type of nodes in config file
+ starcluster start [new cluster name]
+ all nodes now have R!
+
+* else:
+
+ choose/update number/type of nodes in config file
+ starcluster start [new cluster name]
+
+prep for algorithm:
+
+ edit gbmSetup.R for settings and run name
+ edit submitFitJobs.sh with run name inside of loop
+ put 'filesToNodes' on master node as user jared in /home/jared: starcluster put -u jared [cluster name] /home/jared/filesToNodes /home/jared
+ ssh to master as user
+ batch gbmSetup.R
+ move to runName directory
+
+make predictions:
+
+ source submitFitJobs.sh
+ source submitPredJobs.sh
+ source submitValidation1Jobs.sh
+ edit/update rootDir and runName in validation2.R
+ R CMD BATCH --save validation2.R
+ own the world.
+
+ use following to compress and archive fits and predictions:
+   tar cvfz (archive file name).tar.gz (path to directory to archive)
+
